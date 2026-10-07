@@ -27,13 +27,13 @@ output "s3_bucket" {
 
 # ── Database ──────────────────────────────────────────────────────────────
 output "aurora_endpoint" {
-  description = "Aurora cluster writer endpoint."
-  value       = aws_rds_cluster.main.endpoint
+  description = "RDS PostgreSQL instance endpoint."
+  value       = aws_db_instance.main.address
 }
 
 output "aurora_port" {
-  description = "Aurora PostgreSQL port."
-  value       = aws_rds_cluster.main.port
+  description = "RDS PostgreSQL port."
+  value       = aws_db_instance.main.port
 }
 
 # ── Secrets ───────────────────────────────────────────────────────────────

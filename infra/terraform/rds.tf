@@ -1,3 +1,11 @@
+# ── DB subnet group (spans both private subnets) ──────────────────────────
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.project}-db-subnet-group"
+  subnet_ids = aws_subnet.private[*].id
+
+  tags = { Name = "${var.project}-db-subnet-group" }
+}
+
 # ── RDS PostgreSQL ────────────────────────────────────────────────────────
 # Lives in the private subnets and accepts connections only from the EC2
 # security group. The Free plan only allows Aurora via "express configuration"

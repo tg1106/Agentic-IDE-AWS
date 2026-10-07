@@ -45,9 +45,9 @@ variable "key_pair_name" {
 }
 
 variable "ec2_root_volume_gb" {
-  description = "Root EBS volume size in GiB. 60 GB leaves room for the model weights."
+  description = "Root EBS volume size in GiB. Must be >= 75 GB (Deep Learning AMI snapshot size). 100 GB leaves room for model weights."
   type        = number
-  default     = 60
+  default     = 100
 }
 
 # ── S3 ────────────────────────────────────────────────────────────────────

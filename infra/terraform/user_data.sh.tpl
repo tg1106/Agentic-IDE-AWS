@@ -11,14 +11,14 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
 apt-get install -y --no-install-recommends \
   git curl unzip awscli \
-  python3.11 python3.11-venv python3-pip \
-  docker.io
+  python3.11 python3.11-venv python3-pip
 
 # Node.js 20 (for React build)
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt-get install -y nodejs
 
-# Enable Docker
+# The Deep Learning AMI ships with Docker already installed.
+# Just ensure the service is running and ubuntu is in the docker group.
 systemctl enable docker
 systemctl start docker
 usermod -aG docker ubuntu

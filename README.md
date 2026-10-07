@@ -1,6 +1,6 @@
 # Agentic IDE (C++ / Python)
 
-Browser IDE with a **write → run → fix** agent for LeetCode-style problems.  
+Browser IDE with a **write → run → fix** agent for LeetCode-style problems.
 Deployed on AWS with **ALB → WAF → EC2 (g4dn.xlarge)**, workspace files in **S3**, run logs in **Aurora PostgreSQL**.
 
 ---
@@ -8,6 +8,7 @@ Deployed on AWS with **ALB → WAF → EC2 (g4dn.xlarge)**, workspace files in *
 ## AWS deployment (Terraform)
 
 ### Prerequisites
+
 - [Terraform](https://developer.hashicorp.com/terraform/install) ≥ 1.6
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) configured (`aws configure`)
 - GPU quota approved for `g4dn.xlarge` in `ap-southeast-2`
@@ -40,6 +41,7 @@ scripts/deploy.sh \
 ```
 
 The deploy script:
+
 1. Builds the React frontend locally (`npm run build`)
 2. rsyncs all code to the EC2 instance
 3. Installs Python deps in the remote `.venv`
@@ -88,15 +90,15 @@ EC2 g4dn.xlarge  (public subnet, port 8080)
            run_logs table: every sandbox execution logged here
 ```
 
-| AWS Service | Role |
-|---|---|
-| **WAFv2** | Security — OWASP Top 10, bad inputs, IP reputation blocking |
-| **ALB** | Scalability — load balances HTTP traffic, health checks EC2 |
-| **EC2 g4dn.xlarge** | Model inference (vLLM), app server, Docker sandbox |
-| **S3** | Workspace file storage with versioning (disaster recovery) |
-| **Aurora Serverless v2** | Run-log database; 7-day PITR backup (disaster recovery) |
-| **Secrets Manager** | Stores IDE password + DB credentials; injected at EC2 boot |
-| **IAM role** | EC2 gets least-privilege access to S3 + Secrets Manager only |
+| AWS Service                    | Role                                                         |
+| ------------------------------ | ------------------------------------------------------------ |
+| **WAFv2**                | Security — OWASP Top 10, bad inputs, IP reputation blocking |
+| **ALB**                  | Scalability — load balances HTTP traffic, health checks EC2 |
+| **EC2 g4dn.xlarge**      | Model inference (vLLM), app server, Docker sandbox           |
+| **S3**                   | Workspace file storage with versioning (disaster recovery)   |
+| **Aurora Serverless v2** | Run-log database; 7-day PITR backup (disaster recovery)      |
+| **Secrets Manager**      | Stores IDE password + DB credentials; injected at EC2 boot   |
+| **IAM role**             | EC2 gets least-privilege access to S3 + Secrets Manager only |
 
 ---
 
@@ -123,12 +125,14 @@ scripts/run.sh --reload
 ```
 
 **Frontend hot-reload** during UI development:
+
 ```bash
 scripts/run.sh --reload       # terminal 1 — FastAPI at :8080
 cd frontend && npm run dev    # terminal 2 — Vite HMR at :5173
 ```
 
 Smoke-test without a model:
+
 ```bash
 curl -u admin:change-me-ide-pass -X POST localhost:8080/api/run \
   -H 'Content-Type: application/json' \
@@ -136,16 +140,23 @@ curl -u admin:change-me-ide-pass -X POST localhost:8080/api/run \
 ```
 
 # Start vLLM in a tmux pane (first start downloads ~4 GB model)
+
 tmux new -d -s llm 'scripts/start_vllm.sh'
 
 # Start the IDE server in another pane
+
 # (run.sh auto-rebuilds the frontend if src/ is newer than dist/)
+
 tmux new -d -s ide 'scripts/run.sh'
 
 # Auto-stop after 30 minutes of inactivity (add to root crontab)
+
 sudo crontab -e
+
 # Add this line:
+
 # */5 * * * * /home/ubuntu/agentic-ide/scripts/idle_shutdown.sh
+
 ```
 
 ## Access
