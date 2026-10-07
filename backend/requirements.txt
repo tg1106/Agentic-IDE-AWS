@@ -1,0 +1,18 @@
+# Pinned versions for reproducibility. Python 3.11+.
+#
+# vLLM is NOT listed here — it is GPU-only and installed separately:
+#   pip install vllm
+# For local dev without a GPU, set LLM_BASE_URL in .env to a hosted provider.
+
+fastapi==0.115.14
+uvicorn[standard]==0.30.6
+
+# openai v1.x — provides AsyncOpenAI used in llm.py.
+# Do NOT upgrade to v2.x without testing — it has breaking API changes.
+openai==1.109.1
+
+pydantic==2.13.5
+
+# AWS
+boto3==1.34.120              # S3 file storage
+psycopg2-binary==2.9.9       # Aurora PostgreSQL driver

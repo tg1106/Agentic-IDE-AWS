@@ -1,0 +1,8 @@
+workspace/
+.env
+__pycache__/
+.venv/
+frontend/node_modules/
+frontend/dist/
+AGENTS.md 
+PRD.md
