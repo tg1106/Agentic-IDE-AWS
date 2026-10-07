@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 # psycopg2 is only required when Aurora is configured. Import lazily so local
 # dev without the driver installed doesn't break on import.
 _pool = None   # connection pool, initialised by init_db()
+_table_ready = False   # set once run_logs exists; log_run retries init_db until then
 
 
 def _get_pool():
@@ -37,7 +38,7 @@ def _get_pool():
             dbname=config.DB_NAME,
             user=config.DB_USER,
             password=config.DB_PASS,
-            connect_timeout=10,
+            connect_timeout=30,   # allows Aurora to resume from auto-pause
             sslmode="require",   # Aurora always supports SSL
         )
         log.info("Aurora connection pool created (host=%s)", config.DB_HOST)
@@ -50,6 +51,7 @@ def _get_pool():
 
 def init_db() -> None:
     """Create the run_logs table if it doesn't exist. Called at app startup."""
+    global _table_ready
     pool = _get_pool()
     if pool is None:
         log.info("DB_HOST not set — Aurora logging disabled.")
@@ -74,6 +76,7 @@ def init_db() -> None:
             with conn.cursor() as cur:
                 cur.execute(create_sql)
         log.info("run_logs table ready.")
+        _table_ready = True
     except Exception as exc:
         log.error("init_db failed: %s", exc)
     finally:
@@ -94,6 +97,8 @@ def log_run(
     pool = _get_pool()
     if pool is None:
         return
+    if not _table_ready:
+        init_db()   # Aurora may not have been ready at app startup
 
     sql = """
     INSERT INTO run_logs

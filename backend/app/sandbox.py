@@ -6,6 +6,7 @@ DB_HOST is not configured).
 import os
 import subprocess
 import tempfile
+import threading
 import uuid
 
 from . import config, db
@@ -17,8 +18,8 @@ FILES = {"cpp": "main.cpp", "python": "main.py"}
 # compile_timeout is separate from run_timeout: g++ can take several seconds
 # even for small files on a cold container.
 CMDS = {
-    "cpp":    "timeout {c} g++ -O2 -std=c++17 main.cpp -o main && timeout {t} ./main",
-    "python": "timeout {t} python3 main.py",
+    "cpp":    "ulimit -f 100000; timeout {c} g++ -O2 -std=c++17 main.cpp -o main && timeout {t} ./main",
+    "python": "ulimit -f 100000; timeout {t} python3 main.py",
 }
 
 
@@ -71,7 +72,7 @@ def run_code(
             "--cpus",         "1",
             "--pids-limit",   "64",
             "--read-only",
-            "--tmpfs",        "/tmp",
+            "--tmpfs",        "/tmp:size=64m",
             "--cap-drop",     "ALL",
             "--security-opt", "no-new-privileges",
             "--user",         f"{os.getuid()}:{os.getgid()}",
@@ -112,14 +113,19 @@ def run_code(
             }
 
     # Log to Aurora (silently skipped when DB_HOST is unset)
-    db.log_run(
-        language=language,
-        exit_code=result["exit_code"],
-        timed_out=result["timed_out"],
-        stdout=result["stdout"],
-        stderr=result["stderr"],
-        passed=log_passed,
-        attempt=log_attempt,
-    )
+    # Fire-and-forget: Aurora may be resuming from auto-pause, which must not delay the response.
+    threading.Thread(
+        target=db.log_run,
+        kwargs=dict(
+            language=language,
+            exit_code=result["exit_code"],
+            timed_out=result["timed_out"],
+            stdout=result["stdout"],
+            stderr=result["stderr"],
+            passed=log_passed,
+            attempt=log_attempt,
+        ),
+        daemon=True,
+    ).start()
 
     return result

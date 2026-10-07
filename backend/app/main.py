@@ -171,15 +171,7 @@ async def run(b: RunBody):
         result = await asyncio.to_thread(sandbox.run_code, b.language, b.code, b.stdin)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    # Log to Aurora (non-blocking, fire-and-forget)
-    asyncio.create_task(asyncio.to_thread(
-        db.log_run,
-        language=b.language,
-        exit_code=result["exit_code"],
-        timed_out=result["timed_out"],
-        stdout=result["stdout"],
-        stderr=result["stderr"],
-    ))
+    # Aurora logging happens inside sandbox.run_code, so it is not repeated here.
     return result
 
 

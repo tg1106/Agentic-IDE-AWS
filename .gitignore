@@ -6,3 +6,11 @@ frontend/node_modules/
 frontend/dist/
 AGENTS.md 
 PRD.md
+
+# Terraform state and local vars hold secrets: never commit
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.venv-vllm/
+*.pem

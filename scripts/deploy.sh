@@ -47,6 +47,10 @@ rsync -az --delete \
   --exclude='frontend/dist' \
   --exclude='backend/app/__pycache__' \
   --exclude='.venv' \
+  --exclude='.venv-vllm' \
+  --exclude='infra/terraform/.terraform' \
+  --exclude='infra/terraform/*.tfstate*' \
+  --exclude='infra/terraform/*.tfvars' \
   --exclude='workspace' \
   --exclude='.env' \
   -e "ssh $SSH_OPTS" \
@@ -84,5 +88,5 @@ done
 
 echo ""
 echo "=== Deploy complete ==="
-echo "App URL: http://$EC2_IP:8080"
-echo "(Or use the ALB DNS from: terraform -chdir=infra/terraform output app_url)"
+echo "App URL: run  terraform -chdir=infra/terraform output app_url"
+echo "(Port 8080 is only reachable from the ALB, not directly.)"
