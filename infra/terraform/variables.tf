@@ -54,7 +54,7 @@ variable "ec2_root_volume_gb" {
 variable "s3_bucket_name" {
   description = "Globally unique S3 bucket name for workspace files."
   type        = string
-  default     = "tharun-gopinath-1086-CAD-DA2"
+  default     = "agentic-ide-cad-da2-1086-workspace"
 }
 
 # ── Aurora ────────────────────────────────────────────────────────────────

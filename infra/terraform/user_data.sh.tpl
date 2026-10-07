@@ -38,9 +38,13 @@ DB_PASS=$(echo  "$SECRET_JSON" | python3 -c "import sys,json; print(json.load(sy
 REPO_DIR="/home/ubuntu/agentic-ide"
 if [ ! -d "$REPO_DIR" ]; then
   # Clone from the public repo URL — update this if your repo is private.
-  git clone https://github.com/YOUR_GITHUB_USERNAME/agentic-ide.git "$REPO_DIR" || \
+  git clone https://github.com/tg1106/Agentic-IDE-AWS.git "$REPO_DIR" || \
   # Fallback: copy from local zip if git clone fails (useful during development).
   echo "WARNING: git clone failed — deploy manually with scripts/deploy.sh"
+fi
+if [ ! -f "$REPO_DIR/backend/requirements.txt" ]; then
+  echo "ERROR: repo not found at $REPO_DIR (clone failed - private repo?). Run scripts/deploy.sh from your laptop, then redo the remaining bootstrap steps by hand."
+  exit 1
 fi
 chown -R ubuntu:ubuntu "$REPO_DIR"
 
@@ -49,7 +53,10 @@ cd "$REPO_DIR"
 sudo -u ubuntu python3.11 -m venv .venv
 sudo -u ubuntu .venv/bin/pip install --upgrade pip
 sudo -u ubuntu .venv/bin/pip install -r backend/requirements.txt
-sudo -u ubuntu .venv/bin/pip install vllm
+# vLLM gets its own venv so its pinned dependencies cannot break the API server's.
+sudo -u ubuntu python3.11 -m venv .venv-vllm
+sudo -u ubuntu .venv-vllm/bin/pip install --upgrade pip
+sudo -u ubuntu .venv-vllm/bin/pip install vllm
 
 # ── React frontend build ──────────────────────────────────────────────────
 cd "$REPO_DIR/frontend"
@@ -102,7 +109,7 @@ After=network.target
 User=ubuntu
 WorkingDirectory=/home/ubuntu/agentic-ide
 EnvironmentFile=/home/ubuntu/agentic-ide/.env
-ExecStart=/home/ubuntu/agentic-ide/.venv/bin/python -m vllm.entrypoints.openai.api_server \
+ExecStart=/home/ubuntu/agentic-ide/.venv-vllm/bin/python -m vllm.entrypoints.openai.api_server \
   --model ${llm_model} \
   --quantization awq \
   --dtype half \

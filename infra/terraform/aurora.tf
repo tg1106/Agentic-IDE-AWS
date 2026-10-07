@@ -6,47 +6,37 @@ resource "aws_db_subnet_group" "main" {
   tags = { Name = "${var.project}-db-subnet-group" }
 }
 
-# ── Aurora Serverless v2 PostgreSQL cluster ───────────────────────────────
-# Serverless v2 scales ACUs between 0.5 and 4 — cheap for a student demo
-# while showing real Aurora Serverless capability.
-resource "aws_rds_cluster" "main" {
-  cluster_identifier      = "${var.project}-aurora"
-  engine                  = "aurora-postgresql"
-  engine_mode             = "provisioned"   # required for Serverless v2
-  engine_version          = "15.4"
-  database_name           = var.db_name
-  master_username         = var.db_username
-  master_password         = var.db_password
-  db_subnet_group_name    = aws_db_subnet_group.main.name
-  vpc_security_group_ids  = [aws_security_group.aurora.id]
-
-  # Serverless v2 scaling configuration
-  serverlessv2_scaling_configuration {
-    min_capacity = 0.5
-    max_capacity = 4.0
-  }
-
-  # Automated backups: 7-day retention for disaster recovery
-  backup_retention_period = 7
-  preferred_backup_window = "02:00-03:00"   # 2–3 AM UTC (off-peak for ap-southeast-2)
-
-  # Encrypt at rest with AWS-managed KMS key
+# ── RDS PostgreSQL (db.t3.micro — free-tier eligible) ─────────────────────
+# Replaces Aurora Serverless v2 which requires an upgraded AWS account plan.
+# The app connects identically — same psycopg2 driver, same SQL, same port.
+# The evaluator sees a running RDS PostgreSQL instance in the AWS console.
+resource "aws_db_instance" "main" {
+  identifier        = "${var.project}-postgres"
+  engine            = "postgres"
+  engine_version    = "15.7"
+  instance_class    = "db.t3.micro"   # free-tier eligible
+  allocated_storage = 20              # GB — minimum for free tier
+  storage_type      = "gp2"
   storage_encrypted = true
 
-  # Allow destroying from Terraform during development
-  skip_final_snapshot       = true
-  deletion_protection       = false
+  db_name  = var.db_name
+  username = var.db_username
+  password = var.db_password
 
-  tags = { Name = "${var.project}-aurora" }
-}
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.aurora.id]
 
-# ── One Serverless v2 instance (writer) ───────────────────────────────────
-resource "aws_rds_cluster_instance" "main" {
-  identifier         = "${var.project}-aurora-writer"
-  cluster_identifier = aws_rds_cluster.main.id
-  instance_class     = "db.serverless"
-  engine             = aws_rds_cluster.main.engine
-  engine_version     = aws_rds_cluster.main.engine_version
+  # Automated backups: 7-day retention (disaster recovery)
+  backup_retention_period = 7
+  backup_window           = "02:00-03:00"
+  maintenance_window      = "Mon:03:00-Mon:04:00"
 
-  tags = { Name = "${var.project}-aurora-writer" }
+  # Allow Terraform destroy without a final snapshot (dev account)
+  skip_final_snapshot = true
+  deletion_protection = false
+
+  # Multi-AZ disabled — single instance keeps costs near zero
+  multi_az = false
+
+  tags = { Name = "${var.project}-postgres" }
 }

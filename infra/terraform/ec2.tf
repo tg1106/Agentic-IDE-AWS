@@ -105,13 +105,13 @@ resource "aws_instance" "ide" {
     llm_model    = var.llm_model
     idle_minutes = var.idle_minutes
     s3_bucket    = aws_s3_bucket.workspace.bucket
-    db_host      = aws_rds_cluster.main.endpoint
-    db_port      = aws_rds_cluster.main.port
+    db_host      = aws_db_instance.main.address
+    db_port      = aws_db_instance.main.port
     db_name      = var.db_name
   }))
 
   tags = { Name = "${var.project}-ide" }
 
-  # Wait for Aurora to be available before the instance boots and tries to connect.
-  depends_on = [aws_rds_cluster_instance.main]
+  # Wait for the database to be available before the instance boots and tries to connect.
+  depends_on = [aws_db_instance.main]
 }
