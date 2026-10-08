@@ -86,7 +86,7 @@ resource "aws_instance" "ide" {
   ami                    = data.aws_ami.dlami.id
   instance_type          = var.ec2_instance_type
   key_name               = var.key_pair_name
-  subnet_id              = aws_subnet.public[0].id
+  subnet_id              = aws_subnet.public[1].id
   vpc_security_group_ids = [aws_security_group.ec2.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
 
