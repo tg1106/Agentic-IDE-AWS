@@ -246,57 +246,47 @@ input:focus-visible,
 .exit-ok    { color: var(--ok);  margin-top: 4px; }
 .exit-bad   { color: var(--bad); margin-top: 4px; }
 
-/* ── Solve panel ────────────────────────────────────────────────────────── */
+/* ── Solve panel (chat layout) ──────────────────────────────────────────── */
 .solve-panel {
   grid-row: 2;
   border-left: 1px solid var(--line);
   background: var(--panel);
   display: grid;
-  grid-template-rows: auto 1fr auto auto auto 1fr;
+  grid-template-rows: auto 1fr auto;
   min-height: 0;
   overflow: hidden;
 }
 
-.problem-area {
-  resize: none;
-  background: var(--panel);
-  color: var(--text);
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  padding: 8px 12px;
-  font: 13px ui-monospace, Menlo, monospace;
-  width: 100%;
-  height: 100%;
-}
-.problem-area::placeholder { color: var(--dim); }
-
-.field-label {
-  display: block;
-  padding: 4px 12px 2px;
-  color: var(--dim);
-  font-size: 11px;
-}
-
-.tests-area {
-  resize: none;
-  background: var(--panel);
-  color: var(--text);
-  border: 0;
+.chat-input-area {
   border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   padding: 8px 12px;
-  font: 13px ui-monospace, Menlo, monospace;
-  width: 100%;
-  height: 90px;
+  flex-shrink: 0;
 }
-.tests-area::placeholder { color: var(--dim); }
 
-.solve-actions {
+.chat-textarea {
+  width: 100%;
+  resize: none;
+  height: 90px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font: 13px ui-monospace, Menlo, monospace;
+  margin-bottom: 8px;
+}
+.chat-textarea::placeholder { color: var(--dim); }
+.chat-textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chat-textarea:disabled { opacity: .5; cursor: not-allowed; }
+
+.chat-actions {
   display: flex;
   gap: 8px;
-  padding: 8px 12px;
 }
-.solve-actions .btn { flex: 1; }
+.chat-actions .btn { flex: 1; }
 
 .agent-log {
   border-top: 1px solid var(--line);

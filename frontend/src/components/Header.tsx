@@ -22,7 +22,7 @@ export default function Header({
 }: Props) {
   return (
     <header className="app-header">
-      <span className="logo">Agentic IDE</span>
+      <span className="logo">Agentic IDE — Tharun Gopinath</span>
 
       {dirty && (
         <span className="dirty-dot" title="Unsaved changes" aria-label="Unsaved changes">

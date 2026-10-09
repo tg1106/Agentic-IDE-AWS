@@ -65,31 +65,39 @@ def _validate_name(name: str) -> str:
 
 # ── S3 helpers ────────────────────────────────────────────────────────────
 def _s3_list() -> list[str]:
-    resp = _s3.list_objects_v2(Bucket=config.S3_BUCKET)
-    return sorted(
-        obj["Key"] for obj in resp.get("Contents", [])
-        if NAME.match(obj["Key"])
-    )
+    try:
+        resp = _s3.list_objects_v2(Bucket=config.S3_BUCKET)
+        return sorted(
+            obj["Key"] for obj in resp.get("Contents", [])
+            if NAME.match(obj["Key"])
+        )
+    except Exception as e:
+        raise HTTPException(500, f"S3 list failed: {e}. Check IAM permissions.")
 
 def _s3_get(name: str) -> str:
     try:
         obj = _s3.get_object(Bucket=config.S3_BUCKET, Key=name)
         return obj["Body"].read().decode()
     except ClientError as e:
-        if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
+        code = e.response["Error"]["Code"]
+        if code in ("NoSuchKey", "404"):
             raise HTTPException(404, "File not found")
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, f"S3 error: {e}")
 
 def _s3_put(name: str, content: str) -> None:
-    _s3.put_object(Bucket=config.S3_BUCKET, Key=name, Body=content.encode())
+    try:
+        _s3.put_object(Bucket=config.S3_BUCKET, Key=name, Body=content.encode())
+    except Exception as e:
+        raise HTTPException(500, f"S3 write failed: {e}. Check IAM permissions.")
 
 def _s3_delete(name: str) -> None:
     try:
         _s3.delete_object(Bucket=config.S3_BUCKET, Key=name)
     except ClientError as e:
-        if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
+        code = e.response["Error"]["Code"]
+        if code in ("NoSuchKey", "404"):
             raise HTTPException(404, "File not found")
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, f"S3 error: {e}")
 
 
 # ── Local-filesystem helpers (dev fallback) ───────────────────────────────

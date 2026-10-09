@@ -40,7 +40,8 @@ exec python -m vllm.entrypoints.openai.api_server \
   --model           "${MODEL}" \
   --quantization    awq \
   --dtype           half \
-  --max-model-len   8192 \
+  --max-model-len   4096 \
+  --gpu-memory-utilization 0.90 \
   --served-model-name "${MODEL}" \
   --host            127.0.0.1 \
   --port            8000
